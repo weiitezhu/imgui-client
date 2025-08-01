@@ -1,0 +1,2 @@
+class MainWindowStore:
+    pass
