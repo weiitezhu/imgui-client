@@ -14,8 +14,8 @@ class Editor:
         self.window = -1
         self.impl = None
         self.store = MainWindowStore()
-        self.context = Context()
         self.set_up_imgui()
+        self.context = Context()
 
     def set_up_imgui(self):
         # 创建窗口

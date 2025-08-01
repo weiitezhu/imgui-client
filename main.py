@@ -1,6 +1,7 @@
 # main.py
 import glfw
 from Editor.editor import Editor
+import OpenGL.GL as gl
 
 
 def main():
@@ -13,6 +14,7 @@ def main():
     glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
     glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
     glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
+    glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, gl.GL_TRUE)
     e = Editor()
     e.exec()
 

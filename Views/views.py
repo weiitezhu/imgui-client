@@ -1,10 +1,15 @@
 # UI 事件分发
-from Context.context import Context
+import time
+
+from Context.context import Context, AppModeEnum, RenderModeEnum
 import imgui
 from Stores.mainwindowStore import MainWindowStore
 
+start_time = time.time()
 
 def main_window(store: MainWindowStore):
+    context = Context()
+
     # 设置主窗口样式
     imgui.set_next_window_position(0, 0)
     imgui.set_next_window_size(imgui.get_io().display_size.x, imgui.get_io().display_size.y)
@@ -73,7 +78,8 @@ def main_window(store: MainWindowStore):
     imgui.begin_child("Workspace", work_size[0], work_size[1], flags=imgui.WINDOW_NO_SCROLLBAR)
 
     # 左侧面板
-    left_panel()
+    if context.app_mode == AppModeEnum.EDITOR:
+        left_panel()
 
     # 中间视图区域
     imgui.same_line()
@@ -249,14 +255,25 @@ def right_panel():
 def status_bar():
     io = imgui.get_io()
     status_bar_size = (io.display_size.x, 24)
+    
+    # 设置状态栏位置在窗口底部
     imgui.set_cursor_pos((0, io.display_size.y - status_bar_size[1]))
-
-    imgui.begin_child(
-        "StatusBar",
-        status_bar_size[0], status_bar_size[1],
-        flags=(imgui.WINDOW_NO_SCROLLBAR | imgui.WINDOW_NO_SCROLL_WITH_MOUSE)
-    )
-
+    
+    # 使用 imgui.begin() 创建一个固定的底部状态栏，而不是可移动的子窗口
+    imgui.begin("StatusBar", flags=(
+        imgui.WINDOW_NO_TITLE_BAR |
+        imgui.WINDOW_NO_RESIZE |
+        imgui.WINDOW_NO_MOVE |
+        imgui.WINDOW_NO_COLLAPSE |
+        imgui.WINDOW_NO_NAV |
+        imgui.WINDOW_NO_SCROLLBAR |
+        imgui.WINDOW_NO_SCROLL_WITH_MOUSE
+    ))
+    
+    # 设置窗口位置和大小
+    imgui.set_window_position(0, io.display_size.y - status_bar_size[1])
+    imgui.set_window_size(status_bar_size[0], status_bar_size[1])
+    
     # 状态栏背景
     draw_list = imgui.get_window_draw_list()
     cursor_pos = imgui.get_cursor_screen_position()
@@ -265,30 +282,35 @@ def status_bar():
         cursor_pos[0] + status_bar_size[0], cursor_pos[1] + status_bar_size[1],
         imgui.get_color_u32_rgba(0.15, 0.15, 0.15, 1.0)
     )
-
+    
+    # 文本内容
     imgui.set_cursor_pos_y(4)
     imgui.text("Ready")
     imgui.same_line()
-
+    
     # 显示当前工具
-    imgui.same_line(imgui.get_content_region_available_width() - 200)
+    available_width = imgui.get_content_region_available_width()
+    imgui.set_cursor_pos_x(available_width - 200)
     imgui.text("Tool: Select")
-
+    imgui.same_line()
+    
     # 显示坐标系
-    imgui.same_line(imgui.get_content_region_available_width() - 100)
+    imgui.set_cursor_pos_x(available_width - 100)
     coordinate_systems = ["Local", "World"]
     current_coord = getattr(status_bar, 'current_coord', 0)
     changed, current_coord = imgui.combo("##CoordSystem", current_coord, coordinate_systems)
     if changed:
         status_bar.current_coord = current_coord
-
-    imgui.end_child()
+    
+    imgui.end()
 
 
 render_viewport_current_view = 0
 
 
 def view_port():
+    context = Context()
+
     global render_viewport_current_view
     available_x = imgui.get_content_region_available_width()
     imgui.begin_child("Viewport", available_x - 250, 0, True)
@@ -298,70 +320,98 @@ def view_port():
     imgui.same_line(imgui.get_content_region_available_width() - 120)
 
     # 视图模式选择
-    view_modes = ["Perspective", "Top", "Front", "Side"]
+    view_modes = ["Edit", "Command", "ViewPort", "OPERATE"]
     current_view = render_viewport_current_view
     changed, current_view = imgui.combo("##ViewMode", current_view, view_modes)
     if changed:
         render_viewport_current_view = current_view
+        if current_view == 0:
+            context.switch_app_mode(AppModeEnum.EDITOR)
+        elif current_view == 1:
+            context.switch_app_mode(AppModeEnum.COMMAND)
+        elif current_view == 2:
+            context.switch_app_mode(AppModeEnum.VIEW_PORT)
+        elif current_view == 3:
+            context.switch_app_mode(AppModeEnum.OPERATE)
 
     # 3D视图区域
-    viewport_size = imgui.get_content_region_available()
-    viewport_pos = imgui.get_cursor_screen_position()
+    if context.render_mode == RenderModeEnum.NONE:
 
-    # 这里应该渲染3D场景到纹理，然后显示纹理
-    # 示例中使用占位符
-    draw_list = imgui.get_window_draw_list()
-    draw_list.add_rect_filled(
-        viewport_pos[0], viewport_pos[1],
-        viewport_pos[0] + viewport_size[0], viewport_pos[1] + viewport_size[1],
-        imgui.get_color_u32_rgba(0.2, 0.2, 0.2, 1.0)
-    )
+        viewport_size = imgui.get_content_region_available()
+        viewport_pos = imgui.get_cursor_screen_position()
 
-    # 绘制简单的3D坐标轴指示器
-    axis_size = 80.0
-    axis_pos_x = viewport_pos[0] + 20
-    axis_pos_y = viewport_pos[1] + viewport_size[1] - 20
+        # 这里应该渲染3D场景到纹理，然后显示纹理
+        # 示例中使用占位符
+        draw_list = imgui.get_window_draw_list()
+        draw_list.add_rect_filled(
+            viewport_pos[0], viewport_pos[1],
+            viewport_pos[0] + viewport_size[0], viewport_pos[1] + viewport_size[1],
+            imgui.get_color_u32_rgba(0.2, 0.2, 0.2, 1.0)
+        )
 
-    # X轴 (红色)
-    draw_list.add_line(
-        axis_pos_x, axis_pos_y,
-        axis_pos_x + axis_size, axis_pos_y,
-        imgui.get_color_u32_rgba(1.0, 0.0, 0.0, 1.0), 2.0
-    )
-    draw_list.add_text(
-        axis_pos_x + axis_size - 10, axis_pos_y - 10,
-        imgui.get_color_u32_rgba(1.0, 0.0, 0.0, 1.0), "X"
-    )
+        # 绘制简单的3D坐标轴指示器
+        axis_size = 80.0
+        axis_pos_x = viewport_pos[0] + 20
+        axis_pos_y = viewport_pos[1] + viewport_size[1] - 20
 
-    # Y轴 (绿色)
-    draw_list.add_line(
-        axis_pos_x, axis_pos_y,
-        axis_pos_x, axis_pos_y - axis_size,
-        imgui.get_color_u32_rgba(0.0, 1.0, 0.0, 1.0), 2.0
-    )
-    draw_list.add_text(
-        axis_pos_x - 10, axis_pos_y - axis_size,
-        imgui.get_color_u32_rgba(0.0, 1.0, 0.0, 1.0), "Y"
-    )
+        # X轴 (红色)
+        draw_list.add_line(
+            axis_pos_x, axis_pos_y,
+            axis_pos_x + axis_size, axis_pos_y,
+            imgui.get_color_u32_rgba(1.0, 0.0, 0.0, 1.0), 2.0
+        )
+        draw_list.add_text(
+            axis_pos_x + axis_size - 10, axis_pos_y - 10,
+            imgui.get_color_u32_rgba(1.0, 0.0, 0.0, 1.0), "X"
+        )
 
-    # Z轴 (蓝色)
-    draw_list.add_line(
-        axis_pos_x, axis_pos_y,
-        axis_pos_x + axis_size * 0.7, axis_pos_y - axis_size * 0.7,
-        imgui.get_color_u32_rgba(0.0, 0.0, 1.0, 1.0), 2.0
-    )
-    draw_list.add_text(
-        axis_pos_x + axis_size * 0.7 - 10, axis_pos_y - axis_size * 0.7 - 10,
-        imgui.get_color_u32_rgba(0.0, 0.0, 1.0, 1.0), "Z"
-    )
+        # Y轴 (绿色)
+        draw_list.add_line(
+            axis_pos_x, axis_pos_y,
+            axis_pos_x, axis_pos_y - axis_size,
+            imgui.get_color_u32_rgba(0.0, 1.0, 0.0, 1.0), 2.0
+        )
+        draw_list.add_text(
+            axis_pos_x - 10, axis_pos_y - axis_size,
+            imgui.get_color_u32_rgba(0.0, 1.0, 0.0, 1.0), "Y"
+        )
 
-    # 状态信息
-    cursor_y = viewport_size[1] - 20
-    imgui.set_cursor_pos((10, cursor_y))
-    imgui.text("Position: (0.0, 0.0, 0.0)")
-    imgui.same_line()
-    imgui.text("Rotation: (0.0, 0.0, 0.0)")
+        # Z轴 (蓝色)
+        draw_list.add_line(
+            axis_pos_x, axis_pos_y,
+            axis_pos_x + axis_size * 0.7, axis_pos_y - axis_size * 0.7,
+            imgui.get_color_u32_rgba(0.0, 0.0, 1.0, 1.0), 2.0
+        )
+        draw_list.add_text(
+            axis_pos_x + axis_size * 0.7 - 10, axis_pos_y - axis_size * 0.7 - 10,
+            imgui.get_color_u32_rgba(0.0, 0.0, 1.0, 1.0), "Z"
+        )
 
+        # 状态信息
+        cursor_y = viewport_size[1] - 20
+        imgui.set_cursor_pos((10, cursor_y))
+        imgui.text("Position: (0.0, 0.0, 0.0)")
+        imgui.same_line()
+        imgui.text("Rotation: (0.0, 0.0, 0.0)")
+    else:
+        # 使用 OpenGL 渲染器
+        render = context.render
+        viewport_size = imgui.get_content_region_available()
+
+        # 初始化渲染器
+        render.resize(int(viewport_size[0]), int(viewport_size[1]))
+        # 设置背景色
+        # render.set_background_color(0.2, 0.2, 0.2)
+        # 渲染场景
+        current_time = time.time() - start_time
+        render.render(current_time)
+
+        # 在ImGui窗口中显示渲染结果
+        imgui.image(
+            render.get_texture_id(),
+            int(viewport_size[0]), int(viewport_size[1]),
+            (0, 1), (1, 0)  # 翻转Y轴
+        )
     imgui.end_child()
 
 # def main():
