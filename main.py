@@ -1,20 +1,21 @@
 # main.py
-import imgui
 import glfw
-import OpenGL.GL as gl
-from imgui.integrations.glfw import GlfwRenderer
-import numpy as np
-from PIL import Image
-import trimesh
-import os
-from OpenGL.GL import *
-import math
-
 from Editor.editor import Editor
 
+
 def main():
+    # 初始化 GLFW
+    if not glfw.init():
+        print("Failed to initialize GLFW")
+        return
+
+    # OpenGL 版本设置
+    glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
+    glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
+    glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
     e = Editor()
     e.exec()
+
 
 if __name__ == "__main__":
     main()

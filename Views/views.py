@@ -1,15 +1,10 @@
-import imgui
-
-# from Stores.mainwindowStore import MainWindowStore
-
 # UI 事件分发
-# from Context.context import Context
-import OpenGL.GL as gl
-import glfw
+from Context.context import Context
 import imgui
-from imgui.integrations.glfw import GlfwRenderer
+from Stores.mainwindowStore import MainWindowStore
 
-def main_window():
+
+def main_window(store: MainWindowStore):
     # 设置主窗口样式
     imgui.set_next_window_position(0, 0)
     imgui.set_next_window_size(imgui.get_io().display_size.x, imgui.get_io().display_size.y)
@@ -292,6 +287,7 @@ def status_bar():
 
 render_viewport_current_view = 0
 
+
 def view_port():
     global render_viewport_current_view
     available_x = imgui.get_content_region_available_width()
@@ -368,52 +364,55 @@ def view_port():
 
     imgui.end_child()
 
-
-def main():
-    # 初始化 GLFW
-    if not glfw.init():
-        print("Failed to initialize GLFW")
-        return
-
-    # OpenGL 版本设置
-    glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
-    glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
-    glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
-
-    # 创建窗口
-    window = glfw.create_window(1280, 720, "3D Model Designer", None, None)
-    if not window:
-        print("Failed to create GLFW window")
-        glfw.terminate()
-        return
-
-    glfw.make_context_current(window)
-    glfw.swap_interval(1)  # 启用 VSync
-
-    # 初始化 ImGui
-    imgui.create_context()
-    impl = GlfwRenderer(window)
-
-    # 主循环
-    while not glfw.window_should_close(window):
-        glfw.poll_events()
-        impl.process_inputs()
-
-        imgui.new_frame()
-
-        # 渲染主界面
-        main_window()
-
-        imgui.render()
-        gl.glClearColor(0.1, 0.1, 0.1, 1.0)
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-        impl.render(imgui.get_draw_data())
-        glfw.swap_buffers(window)
-
-    # 清理
-    impl.shutdown()
-    glfw.terminate()
-
-
-if __name__ == "__main__":
-    main()
+# def main():
+#     import imgui
+#     from imgui.integrations.glfw import GlfwRenderer
+#     import OpenGL.GL as gl
+#     import glfw
+#     # 初始化 GLFW
+#     if not glfw.init():
+#         print("Failed to initialize GLFW")
+#         return
+#
+#     # OpenGL 版本设置
+#     glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
+#     glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
+#     glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
+#
+#     # 创建窗口
+#     window = glfw.create_window(1280, 720, "3D Model Designer", None, None)
+#     if not window:
+#         print("Failed to create GLFW window")
+#         glfw.terminate()
+#         return
+#
+#     glfw.make_context_current(window)
+#     glfw.swap_interval(1)  # 启用 VSync
+#
+#     # 初始化 ImGui
+#     imgui.create_context()
+#     impl = GlfwRenderer(window)
+#
+#     # 主循环
+#     while not glfw.window_should_close(window):
+#         glfw.poll_events()
+#         impl.process_inputs()
+#
+#         imgui.new_frame()
+#
+#         # 渲染主界面
+#         main_window()
+#
+#         imgui.render()
+#         gl.glClearColor(0.1, 0.1, 0.1, 1.0)
+#         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+#         impl.render(imgui.get_draw_data())
+#         glfw.swap_buffers(window)
+#
+#     # 清理
+#     impl.shutdown()
+#     glfw.terminate()
+#
+#
+# if __name__ == "__main__":
+#     main()
