@@ -3,3 +3,4 @@
 *.xml
 imgui.ini
 .idea
+__pycache__

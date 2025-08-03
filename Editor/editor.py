@@ -7,6 +7,8 @@ from Context.context import Context
 from Stores.mainwindowStore import MainWindowStore
 from Views.views import main_window
 
+class Event:
+    pass
 
 class Editor:
 
@@ -34,13 +36,70 @@ class Editor:
         self.window = window
         self.impl = impl
 
+    def on_mouse_left_button_down(self):
+        """处理鼠标左键按下事件"""
+        pass
+
+    def on_mouse_left_button_up(self):
+        """处理鼠标左键释放事件"""
+        pass
+
+    def on_mouse_right_button_down(self):
+        """处理鼠标右键按下事件"""
+        pass
+
+    def on_mouse_right_button_up(self):
+        """处理鼠标右键释放事件"""
+        pass
+
+    def on_mouse_middle_button_down(self):
+        """处理鼠标中键按下事件"""
+        pass
+
+    def on_mouse_middle_button_up(self):
+        """处理鼠标中键释放事件"""
+        pass
+
+    def on_mouse_move(self):
+        """处理鼠标移动事件"""
+        pass
+
+    def on_mouse_wheel_scroll(self):
+        """处理鼠标滚轮滚动事件"""
+        pass
+
+    def on_mouse_enter(self):
+        """处理鼠标进入窗口事件"""
+        pass
+
+    def on_mouse_leave(self):
+        """处理鼠标离开窗口事件"""
+        pass
+
+
+    def on_mouse_left_button_drag(self):
+        """处理鼠标左键拖拽事件"""
+        pass
+
+    def on_mouse_right_button_drag(self):
+        """处理鼠标右键拖拽事件"""
+        pass
+
+    def on_mouse_center_button_drag(self):
+        """处理鼠标中键拖拽事件"""
+        pass
+
+    def is_mouse_hovering_over_area(self):
+        """检查鼠标是否悬停在特定区域"""
+        pass
+    
+
     def exec(self):
         while not glfw.window_should_close(self.window):
             glfw.poll_events()
             self.impl.process_inputs()
 
             imgui.new_frame()
-
             # 渲染主界面
             main_window(self.store)
 
