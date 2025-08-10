@@ -1,7 +1,7 @@
 # UI 事件分发
 import time
 
-from Context.context import Context, AppModeEnum, RenderModeEnum
+from Editor.context import Context, AppModeEnum, RenderModeEnum
 import imgui
 from Stores.mainwindowStore import MainWindowStore
 
