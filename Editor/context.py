@@ -1,8 +1,10 @@
 from enum import Enum, auto
+from queue import Queue
 from threading import Lock
 
 from Utiles.signal import SignalMeta
 from renderer.ds_engine import RenderEngine
+
 
 class AppModeEnum(Enum):
     EDITOR = 0
@@ -34,11 +36,5 @@ class Context(metaclass=SignalMeta):
     def switch_render_mode(self, mode: RenderModeEnum):
         self.render_mode = mode
 
-    def command_event(self):
-        pass
-
-    def view_port_event(self):
-        pass
-
-    def operate_event(self):
+    def command_handle(self):
         pass
